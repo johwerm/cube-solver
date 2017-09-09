@@ -1,0 +1,13 @@
+name:              cube-solver
+version:           1.0.0
+synopsis:          A solver for cube block puzzels
+author:            Johan Wermensjö
+license:           MIT
+license-file:      LICENSE
+build-type:        Simple
+cabal-version:     >= 1.8
+
+executable cube-solver
+  main-is:         Main.hs
+  hs-source-dirs:  src
+  build-depends:   base >= 4
