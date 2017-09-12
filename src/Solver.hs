@@ -10,6 +10,7 @@ module Solver (
 import Puzzle
 import Transform
 import Cuboid
+import Data.List (nubBy)
 import Data.Maybe (catMaybes, listToMaybe)
 import Control.Monad (foldM)
 
@@ -36,7 +37,12 @@ solveAll' [] _ _ pss = [S pss]
 solveAll' (p:ps) size c pss = concatMap (\(pp, c) -> solveAll' ps size c (pp:pss)) $ places p size c
 
 places :: Piece -> Size -> CCuboid -> [(PieceSolution, CCuboid)]
-places p size c = catMaybes [place p t c | t <- transforms $ getCandidates c]
+places p size c = catMaybes [place p t c | t <- uniqueTransforms p $ transforms $ getCandidates c]
+
+uniqueTransforms :: Piece -> [Transform] -> [Transform]
+uniqueTransforms (P _ bs) ts = fst $ unzip utbss
+    where tbss = zip ts $ map (\t -> map (\(B color pos) -> (color, transform pos t)) bs) ts
+          utbss = reverse . nubBy (\(_,v1) (_,v2) -> v1 == v2) $ reverse tbss
 
 place :: Piece -> Transform -> CCuboid -> Maybe (PieceSolution, CCuboid)
 place p t c = fmap (\c -> (PS p t, c)) $ place' bs t c
@@ -58,4 +64,3 @@ verifyAdj pos color c = notElem color . catMaybes . map (\pos' -> get pos' c) $ 
 
 adjPos :: Pos -> [Pos]
 adjPos (x,y,z) = [(x-1,y,z),(x+1,y,z),(x,y-1,z),(x,y+1,z),(x,y,z-1),(x,y,z+1)]
-
