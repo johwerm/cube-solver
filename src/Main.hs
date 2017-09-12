@@ -4,4 +4,8 @@ import Puzzle (simplePuzzle, oscarsPuzzle)
 import Solver
 
 main :: IO ()
-main = putStrLn $ show $ solve oscarsPuzzle
+main = do
+        putStrLn . show $ solve oscarsPuzzle;
+        --putStrLn . show $ length $ solveAll oscarsPuzzle;
+
+

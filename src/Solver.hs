@@ -1,6 +1,7 @@
 module Solver (
 -- * Functions
     solve,
+    solveAll,
 
 -- * Types
     Solution,
@@ -9,14 +10,13 @@ module Solver (
 import Puzzle
 import Transform
 import Cuboid
-import Data.Maybe (catMaybes)
+import Data.Maybe (catMaybes, listToMaybe)
 import Control.Monad (foldM)
 
-data Solution = S [PieceSolution] | Unsolvable
+data Solution = S [PieceSolution]
 
 instance Show Solution where
     show (S tps) = "Solution:\n" ++ show tps
-    show Unsolvable = "No solution"
 
 data PieceSolution = PS Piece Transform
 
@@ -25,19 +25,15 @@ instance Show PieceSolution where
 
 type CCuboid = Cuboid Color
 
-solve :: Puzzle -> Solution
-solve (Puzzle ps size) = solve' ps size (emptyCube size) []
+solve :: Puzzle -> Maybe Solution
+solve = listToMaybe . solveAll
 
-solve' :: [Piece] -> Size -> CCuboid -> [PieceSolution] -> Solution
-solve' [] _ _ pps           = S pps
-solve' (p:ps) size c pps    = case solutions of
-                                    [] -> Unsolvable
-                                    _  -> head solutions
-    where solutions = filter (isSolution) $ map (\(pp, c) -> solve' ps size c (pp:pps)) $ places p size c
+solveAll :: Puzzle -> [Solution]
+solveAll (Puzzle ps size) = solveAll' ps size (emptyCube size) []
 
-isSolution :: Solution -> Bool
-isSolution (S _) = True
-isSolution _     = False
+solveAll' :: [Piece] -> Size -> CCuboid -> [PieceSolution] -> [Solution]
+solveAll' [] _ _ pss = [S pss]
+solveAll' (p:ps) size c pss = concatMap (\(pp, c) -> solveAll' ps size c (pp:pss)) $ places p size c
 
 places :: Piece -> Size -> CCuboid -> [(PieceSolution, CCuboid)]
 places p size c = catMaybes [place p t c | t <- transforms $ getCandidates c]

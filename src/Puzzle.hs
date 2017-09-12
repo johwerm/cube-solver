@@ -23,7 +23,7 @@ instance Show Piece where
 data Block = B Color Pos
 
 instance Show Block where
-    show (B color pos) = show color ++ "->" ++ show pos ++ " "
+    show (B color pos) = show color ++ "->" ++ show pos
 
 data Color = White | Black
     deriving (Show, Eq)
