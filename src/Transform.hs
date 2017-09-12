@@ -12,11 +12,11 @@ module Transform (
 import Data.Matrix
 
 type Transform = (Translation, Rotation)
-type Rotation = Matrix Integer
+type Rotation = Matrix Int
 type Translation = Pos
 
 type Size = Pos
-type Pos = (Integer, Integer, Integer)
+type Pos = (Int, Int, Int)
 
 transforms :: Size -> [Transform]
 transforms (x,y,z) = [((px,py,pz), r) | px <- [0..(x-1)], py <- [0..(y-1)], pz <- [0..(z-1)], r <- rotationMatrices]
@@ -30,10 +30,10 @@ translate (x,y,z) (tx,ty,tz) = (x+tx,y+ty,z+tz)
 rotate :: Pos -> Rotation -> Pos
 rotate pos rot = matrixToPos $ rot * posToMatrix pos
 
-posToMatrix :: Pos -> Matrix Integer
+posToMatrix :: Pos -> Matrix Int
 posToMatrix (x,y,z) = fromList 3 1 [x,y,z]
 
-matrixToPos :: Matrix Integer -> Pos
+matrixToPos :: Matrix Int -> Pos
 matrixToPos m = (x,y,z)
     where [x,y,z] = toList m
 
@@ -88,9 +88,6 @@ rotationMatrices = map fromLists $ [
      [-1,0,0],
      [0,1,0]],
     [[0,0,-1],
-     [0,-1,0],
-     [-1,0,0]],
-    [[0,0,-1],
      [0,1,0],
      [1,0,0]],
     [[0,1,0],
@@ -99,6 +96,12 @@ rotationMatrices = map fromLists $ [
     [[0,0,1],
      [0,-1,0],
      [1,0,0]],
+    [[0,-1,0],
+     [0,0,-1],
+     [1,0,0]],
+    [[0,0,-1],
+     [0,-1,0],
+     [-1,0,0]],
     [[0,-1,0],
      [0,0,1],
      [-1,0,0]],
