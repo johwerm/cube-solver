@@ -10,19 +10,22 @@ module Transform (
 ) where
 
 import Data.Matrix
+import Common
 
-type Transform = (Translation, Rotation)
+data Transform = T Translation Rotation
+
+instance Show Transform where
+    show (T t r) = "Translation:\n" ++ show t ++ "\n" ++
+                    "Rotation:\n" ++ show r
+
 type Rotation = Matrix Int
 type Translation = Pos
 
-type Size = Pos
-type Pos = (Int, Int, Int)
-
-transforms :: Size -> [Transform]
-transforms (x,y,z) = [((px,py,pz), r) | px <- [0..(x-1)], py <- [0..(y-1)], pz <- [0..(z-1)], r <- rotationMatrices]
+transforms :: [Pos] -> [Transform]
+transforms emptyposs = [T pos r | pos <- emptyposs, r <- rotationMatrices]
 
 transform :: Pos -> Transform -> Pos
-transform pos (trans,rot) = translate (rotate pos rot) trans
+transform pos (T trans rot) = translate (rotate pos rot) trans
 
 translate :: Pos -> Translation -> Pos
 translate (x,y,z) (tx,ty,tz) = (x+tx,y+ty,z+tz)

@@ -10,4 +10,4 @@ cabal-version:     >= 1.8
 executable cube-solver
   main-is:         Main.hs
   hs-source-dirs:  src
-  build-depends:   base >= 4, matrix >= 0.3.5, vector >= 0.11.0
+  build-depends:   base >= 4, matrix >= 0.3.5, containers >= 0.5.7

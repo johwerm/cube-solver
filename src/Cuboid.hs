@@ -3,26 +3,31 @@ module Cuboid (
     emptyCube,
     get,
     set,
+    deleteCandidate,
+    getCandidates,
 
 -- * Types
     Cuboid,
 ) where
 
-import Control.Monad (join)
-import Data.Vector
-import Transform (Size, Pos)
+import Data.Map.Strict as M (Map, empty, lookup, insert)
+import Data.Set as S (Set, fromList, delete, elems)
+import Common
 
-type Cuboid a = Vector (Vector (Vector a))
+data Cuboid a = C (Set Pos) (Map Pos a)
+    deriving Show
 
-emptyCube :: a -> Size -> Cuboid a
-emptyCube def (x,y,z) = fromList [fromList [fromList [def | _ <- [0..(z-1)]] | _ <- [0..(y-1)]] | _ <- [0..(x-1)]]
+emptyCube :: Size -> Cuboid a
+emptyCube (x,y,z) = C (fromList [(px,py,pz) | px <- [0..(z-1)], py <- [0..(y-1)], pz <- [0..(x-1)]]) empty
 
--- | Safe
 get :: Pos -> Cuboid a -> Maybe a
-get (x,y,z) c = c !? x >>= (flip (!?) y) >>= (flip (!?) z)
+get pos (C _ m) = M.lookup pos m
 
--- | Unsafe
 set :: Pos -> a -> Cuboid a -> Cuboid a
-set (x,y,z) v c = c // [(x,cyz // [(y,cz // [(z,v)])])]
-    where cyz = c ! x
-          cz = cyz ! y
+set pos v (C l m) = C l $ M.insert pos v m
+
+deleteCandidate :: Pos -> Cuboid a -> Cuboid a
+deleteCandidate pos (C l m) = C (S.delete pos l) m
+
+getCandidates :: Cuboid a -> [Pos]
+getCandidates (C l _) = S.elems l
