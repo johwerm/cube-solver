@@ -5,7 +5,9 @@ import Solver
 
 main :: IO ()
 main = do
-        putStrLn . show $ solve oscarsPuzzle;
-        putStrLn . show $ length $ solveAll simplePuzzle;
+        s <- solve oscarsPuzzle;
+        putStrLn $ show s;
+        ss2 <- solve simplePuzzle;
+        putStrLn $ show $ length ss2;
 
 

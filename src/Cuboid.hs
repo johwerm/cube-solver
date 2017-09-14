@@ -13,21 +13,29 @@ module Cuboid (
 import Data.Map.Strict as M (Map, empty, lookup, insert)
 import Data.Set as S (Set, fromList, delete, elems)
 import Common
+import Control.Monad (mfilter)
 
-data Cuboid a = C (Set Pos) (Map Pos a)
+data Cuboid a = C (Set Pos) (Map Pos a) Size
     deriving Show
 
 emptyCube :: Size -> Cuboid a
-emptyCube (x,y,z) = C (fromList [(px,py,pz) | px <- [0..(z-1)], py <- [0..(y-1)], pz <- [0..(x-1)]]) empty
+emptyCube size = C (fromList [(px,py,pz) | px <- [0..(z-1)], py <- [0..(y-1)], pz <- [0..(x-1)]]) empty size
+    where (x,y,z) = size
 
 get :: Pos -> Cuboid a -> Maybe a
-get pos (C _ m) = M.lookup pos m
+get pos (C _ m size) = M.lookup pos m
 
-set :: Pos -> a -> Cuboid a -> Cuboid a
-set pos v (C l m) = C l $ M.insert pos v m
+set :: Pos -> a -> Cuboid a -> Maybe (Cuboid a)
+set pos v (C l m size) = mfilter (const $ isValidPos size pos) $ Just $ C l (M.insert pos v m) size
 
 deleteCandidate :: Pos -> Cuboid a -> Cuboid a
-deleteCandidate pos (C l m) = C (S.delete pos l) m
+deleteCandidate pos (C l m size) = C (S.delete pos l) m size
 
 getCandidates :: Cuboid a -> [Pos]
-getCandidates (C l _) = S.elems l
+getCandidates (C l _ _) = S.elems l
+
+isValidPos :: Size -> Pos -> Bool
+isValidPos (x,y,z) (px,py,pz) =
+    px >= 0 && px < x &&
+    py >= 0 && py < y &&
+    pz >= 0 && pz < z

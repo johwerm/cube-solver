@@ -1,6 +1,7 @@
 module Puzzle (
 -- * Functions
     simplePuzzle,
+    simplePuzzle2,
     oscarsPuzzle,
 
 -- * Types
@@ -31,6 +32,13 @@ data Color = White | Black
 simplePuzzle :: Puzzle
 simplePuzzle = Puzzle [P "1" [B White (0,0,0)], P "2" [B White (0,0,0)], P "3" [B White (0,0,0)], P "4" [B White (0,0,0)],
                  P "5" [B Black (0,0,0)], P "6" [B Black (0,0,0)], P "7" [B Black (0,0,0)], P "8" [B Black (0,0,0)]] (2,2,2)
+
+simplePuzzle2 :: Puzzle
+simplePuzzle2 = Puzzle [
+    P "1" [B White (0,0,0),B Black (1,0,0), B Black (0,1,0),B White (1,1,0)],
+    P "2" [B White (0,0,0), B Black (1,0,0)],
+    P "3" [B White (0,0,0)],
+    P "4" [B Black (0,0,0)]] (2,2,2)
 
 oscarsPuzzle :: Puzzle
 oscarsPuzzle = Puzzle [
