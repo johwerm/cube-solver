@@ -7,7 +7,4 @@ main :: IO ()
 main = do
         s <- solve oscarsPuzzle;
         putStrLn $ show s;
-        ss2 <- solve simplePuzzle;
-        putStrLn $ show $ length ss2;
-
 

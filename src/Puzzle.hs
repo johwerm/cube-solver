@@ -8,7 +8,7 @@ module Puzzle (
     Puzzle (Puzzle),
     Piece (P),
     Block (B),
-    Color,
+    Color (Black, White),
 ) where
 
 import Common

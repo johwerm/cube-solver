@@ -6,13 +6,14 @@ module Transform (
 -- * Types
     Pos,
     Size,
-    Transform
+    Transform (T),
 ) where
 
 import Data.Matrix
 import Common
 
 data Transform = T Translation Rotation
+    deriving Eq
 
 instance Show Transform where
     show (T t r) = "Translation:\n" ++ show t ++ "\n" ++
