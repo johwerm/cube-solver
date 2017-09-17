@@ -2,12 +2,14 @@ module Main where
 
 import Puzzle
 import Solver
+import System.TimeIt
 
 main :: IO ()
 main = analyzeAndSolve oscarsPuzzle
+--main = analyzeAndSolve mediumPuzzle
 
 analyzeAndSolve :: Puzzle -> IO ()
 analyzeAndSolve p = do
     analyzePuzzle p
-    putStrLn $ show $ solve p
---    putStrLn $ show $ length $ solveAll p
+    timeIt $ putStrLn $ show $ solve p
+--    timeIt $ putStrLn $ show $ length $ solveAll p

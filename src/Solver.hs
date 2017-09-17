@@ -18,6 +18,7 @@ import Data.List (nubBy, intercalate, (\\), sortBy)
 import Data.Maybe (catMaybes, listToMaybe)
 import Text.Printf
 
+import System.TimeIt
 -- | Types
 
 data Solution = S [PieceSolution]
@@ -44,7 +45,9 @@ solve :: Puzzle -> Maybe Solution
 solve = listToMaybe . solveAll
 
 solveAll :: Puzzle -> [Solution]
-solveAll (Puzzle ps size) = solveAll' (uniqueTransforms size ps) (empty size) []
+solveAll (Puzzle ps size) = solveAll' ws c [] ++ solveAll' bs c []
+    where (ws,bs) = colorUniqueTransforms size ps
+          c = empty size
 
 solveAll' :: [PieceTransPos] -> CCuboid -> [PieceSolution] -> [Solution]
 solveAll' [] _ pss = [S pss]
@@ -52,7 +55,8 @@ solveAll' ((p, tbs):psts) c pss = concatMap (\(pp, c') -> solveAll' psts c' (pp:
 
 places :: Piece -> [TransPos] -> CCuboid -> [(PieceSolution, CCuboid)]
 places p tbs c = [(PS p t, insertBlocks bs c) | (t, bs) <- filter (testBlock . snd) tbs]
-    where testBlock = all (\(color,pos) -> (not $ has pos c) && verifyAdj pos color c)
+--    where testBlock = all (\(color,pos) -> (not $ has pos c) && verifyAdj pos color c)
+    where testBlock = all (\(color,pos) -> not $ has pos c)
 
 insertBlocks :: [(Color, Pos)] -> CCuboid -> CCuboid
 insertBlocks [] = id
@@ -63,6 +67,11 @@ verifyAdj pos color c = notElem color . catMaybes . map (\pos' -> get pos' c) $ 
     where adjPos (x,y,z) = [(x-1,y,z),(x+1,y,z),(x,y-1,z),(x,y+1,z),(x,y,z-1),(x,y,z+1)]
 
 -- | Transformation helper functions
+
+colorUniqueTransforms :: Size -> [Piece] -> ([PieceTransPos],[PieceTransPos])
+colorUniqueTransforms size ps = ((map (\(p, ts) -> (p, filterByZColor White ts)) utbss) , (map (\(p, ts) -> (p, filterByZColor Black ts)) utbss))
+    where utbss = uniqueTransforms size ps
+          filterByZColor zcolor ts' = filter (\(_, bs) -> all (\(color, (x,y,z)) -> not $ (zcolor == color) /= (even (x+y+z))) bs) ts'
 
 uniqueTransforms :: Size -> [Piece] -> [PieceTransPos]
 uniqueTransforms size ps = sortBy (comparing $ length . snd) psts
@@ -87,9 +96,13 @@ analyzePuzzle :: Puzzle -> IO ()
 analyzePuzzle p = do
         putStrLn $ "Is valid: " ++ show (verifyPuzzle p)
         putStrLn $ "Unique transforms:"
-            ++ concatMap (\((P id _),uts) ->
-                "\nPiece " ++ show id ++ " with " ++
-                show (length uts) ++ " transformations") uts
-            ++ "\nCombinations: " ++ printf "%.2E" (fromInteger $ product $ map (toInteger . length . snd) uts :: Float)
+            ++ concatMap (\(((P id _), ws), (_,bs)) ->
+                "\nPiece " ++ show id ++ " with (" ++
+                show (length ws) ++ "+" ++
+                show (length bs) ++") transformations") zutbss
+            ++ "\nCombinations: " ++ printf "%.2E" (fromInteger $ wp + bp :: Float)
     where (Puzzle ps size) = p
-          uts = uniqueTransforms size ps
+          utbss = colorUniqueTransforms size ps
+          zutbss = zip (fst utbss) (snd utbss)
+          wp = product $ map (toInteger . length . snd) $ fst utbss
+          bp = product $ map (toInteger . length . snd) $ snd utbss
