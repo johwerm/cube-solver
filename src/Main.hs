@@ -4,9 +4,10 @@ import Puzzle
 import Solver
 
 main :: IO ()
-main = do
-        putStrLn $ show $ solve oscarsPuzzle;
---        putStrLn $ show $ length $ solve oscarsPuzzle;
---        putStrLn $ show $ solve mediumPuzzle;
---        putStrLn $ show $ length $ solve mediumPuzzle;
+main = analyzeAndSolve oscarsPuzzle
 
+analyzeAndSolve :: Puzzle -> IO ()
+analyzeAndSolve p = do
+    analyzePuzzle p
+    putStrLn $ show $ solve p
+--    putStrLn $ show $ length $ solveAll p

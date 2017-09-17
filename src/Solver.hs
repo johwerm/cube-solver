@@ -62,19 +62,6 @@ verifyAdj :: Pos -> Color -> CCuboid -> Bool
 verifyAdj pos color c = notElem color . catMaybes . map (\pos' -> get pos' c) $ adjPos pos
     where adjPos (x,y,z) = [(x-1,y,z),(x+1,y,z),(x,y-1,z),(x,y+1,z),(x,y,z-1),(x,y,z+1)]
 
--- | Puzzle analyzer functions.
-
-analyzePuzzle :: Puzzle -> IO ()
-analyzePuzzle p = do
-        putStrLn $ "Is valid: " ++ show (verifyPuzzle p)
-        putStrLn $ "Unique transforms:"
-            ++ concatMap (\((P id _),uts) ->
-                "\nPiece " ++ show id ++ " with " ++
-                show (length uts) ++ " transformations") uts
-            ++ "\nCombinations: " ++ printf "%.2E" (fromInteger $ product $ map (toInteger . length . snd) uts :: Float)
-    where (Puzzle ps size) = p
-          uts = uniqueTransforms size ps
-
 -- | Transformation helper functions
 
 uniqueTransforms :: Size -> [Piece] -> [PieceTransPos]
@@ -93,3 +80,16 @@ isValidPos (x,y,z) (px,py,pz) =
     px >= 0 && px < x &&
     py >= 0 && py < y &&
     pz >= 0 && pz < z
+
+-- | Puzzle analyzer functions.
+
+analyzePuzzle :: Puzzle -> IO ()
+analyzePuzzle p = do
+        putStrLn $ "Is valid: " ++ show (verifyPuzzle p)
+        putStrLn $ "Unique transforms:"
+            ++ concatMap (\((P id _),uts) ->
+                "\nPiece " ++ show id ++ " with " ++
+                show (length uts) ++ " transformations") uts
+            ++ "\nCombinations: " ++ printf "%.2E" (fromInteger $ product $ map (toInteger . length . snd) uts :: Float)
+    where (Puzzle ps size) = p
+          uts = uniqueTransforms size ps
