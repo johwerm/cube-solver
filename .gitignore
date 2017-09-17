@@ -82,3 +82,5 @@ modules.xml
 *.ipr
 
 # End of https://www.gitignore.io/api/haskell,intellij+iml
+.idea/emacs.xml
+.idea/inspectionProfiles/

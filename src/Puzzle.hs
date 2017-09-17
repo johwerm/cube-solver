@@ -2,6 +2,7 @@ module Puzzle (
 -- * Functions
     simplePuzzle,
     simplePuzzle2,
+    mediumPuzzle,
     oscarsPuzzle,
 
 -- * Types
@@ -24,7 +25,7 @@ instance Show Piece where
 data Block = B Color Pos
 
 instance Show Block where
-    show (B color pos) = show color ++ "->" ++ show pos
+    show (B color pos) = show color ++ ":" ++ show pos
 
 data Color = White | Black
     deriving (Show, Eq)
@@ -39,6 +40,16 @@ simplePuzzle2 = Puzzle [
     P "2" [B White (0,0,0), B Black (1,0,0)],
     P "3" [B White (0,0,0)],
     P "4" [B Black (0,0,0)]] (2,2,2)
+
+mediumPuzzle :: Puzzle
+mediumPuzzle = Puzzle [
+    P "1" [B White (0,0,0),B Black (1,0,0), B White (2,0,0),B Black (2,1,0)],
+    P "2" [B White (0,0,0),B Black (1,0,0), B White (2,0,0),B Black (2,1,0)],
+    P "3" [B White (0,0,0), B Black (1,0,0), B White (2,0,0)],
+    P "4" [B White (0,0,0), B Black (0,1,0), B White (1,1,0), B Black (2,1,0), B White (2,0,0)],
+    P "5" [B Black (0,0,0),B White (1,0,0), B Black (2,0,0),B White (2,1,0)],
+    P "6" [B Black (0,0,0),B White (1,0,0), B Black (1,1,0)],
+    P "7" [B White (0,0,0),B Black (1,0,0), B White (2,0,0),B Black (2,1,0)]] (3,3,3)
 
 oscarsPuzzle :: Puzzle
 oscarsPuzzle = Puzzle [

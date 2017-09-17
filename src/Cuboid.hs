@@ -2,7 +2,9 @@ module Cuboid (
 -- * Functions
     emptyCube,
     get,
+    has,
     set,
+    setM,
     deleteCandidate,
     getCandidates,
 
@@ -10,7 +12,7 @@ module Cuboid (
     Cuboid,
 ) where
 
-import Data.Map.Strict as M (Map, empty, lookup, insert)
+import Data.Map.Strict as M (Map, empty, lookup, insert, member)
 import Data.Set as S (Set, fromList, delete, elems)
 import Common
 import Control.Monad (mfilter)
@@ -23,10 +25,16 @@ emptyCube size = C (fromList [(px,py,pz) | px <- [0..(z-1)], py <- [0..(y-1)], p
     where (x,y,z) = size
 
 get :: Pos -> Cuboid a -> Maybe a
-get pos (C _ m size) = M.lookup pos m
+get pos (C _ m _) = M.lookup pos m
 
-set :: Pos -> a -> Cuboid a -> Maybe (Cuboid a)
-set pos v (C l m size) = mfilter (const $ isValidPos size pos) $ Just $ C l (M.insert pos v m) size
+has :: Pos -> Cuboid a -> Bool
+has pos (C _ m _) = M.member pos m
+
+setM :: Pos -> a -> Cuboid a -> Maybe (Cuboid a)
+setM pos v (C l m size) = mfilter (const $ isValidPos size pos) $ Just $ C l (M.insert pos v m) size
+
+set :: Pos -> a -> Cuboid a -> Cuboid a
+set pos v (C l m size) = C l (M.insert pos v m) size
 
 deleteCandidate :: Pos -> Cuboid a -> Cuboid a
 deleteCandidate pos (C l m size) = C (S.delete pos l) m size
