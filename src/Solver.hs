@@ -2,10 +2,13 @@ module Solver (
 -- * Functions
     solve,
     solveAll,
+    analyzePuzzle,
 
 -- * Types
     Solution,
 ) where
+
+-- | Imports
 
 import Puzzle
 import Transform
@@ -13,10 +16,9 @@ import Cuboid
 import Data.Ord
 import Data.List (nubBy, intercalate, (\\), sortBy)
 import Data.Maybe (catMaybes, listToMaybe)
-import Control.Monad (foldM)
 import Text.Printf
 
-import Data.Matrix (fromLists)
+-- | Types
 
 data Solution = S [PieceSolution]
 
@@ -28,7 +30,7 @@ data PieceSolution = PS Piece Transform
 instance Show PieceSolution where
     show (PS (P id bs) t) = "\nPiece " ++ show id ++ " with positions: ["
                     ++ (intercalate ", " $ map (\(B color pos) -> show (B color pos) ++ "->" ++ show (transform pos t)) bs)
-                    ++ "]\n" ++ show t
+                    ++ "]\n"
 
 type CCuboid = Cuboid Color
 
@@ -36,69 +38,49 @@ type PieceTransPos = (Piece, [TransPos])
 
 type TransPos = (Transform, [(Color, Pos)])
 
-analyzePuzzle :: Puzzle -> IO ()
-analyzePuzzle p = do
-        putStrLn $ "Is valid: " ++ show (verifyPuzzle p)
-        putStrLn $ "Unique transforms:" ++ concatMap (\((P id _),uts) -> "\nPiece " ++ show id ++ " with " ++ show (length uts) ++ " transformations") uniqueTrans
-    where (Puzzle ps size) = p
-          uniqueTrans = uniqueTransforms size (emptyCube size) ps
+-- | Puzzle solver
 
-verifyPuzzle :: Puzzle -> Bool
-verifyPuzzle (Puzzle ps (x,y,z)) = length allBlocks == numBlocksToFill &&
-        ((even numBlocksToFill && length whiteBlocks == length blackBlocks) ||
-         (odd numBlocksToFill && 1 == abs (length whiteBlocks - length blackBlocks)))
-    where numBlocksToFill = x*y*z
-          allBlocks = concatMap (\(P _ bs) -> bs) ps
-          whiteBlocks = filter (\(B color _) -> color == White) allBlocks
-          blackBlocks = filter (\(B color _) -> color == Black) allBlocks
+solve :: Puzzle -> Maybe Solution
+solve = listToMaybe . solveAll
 
-solve :: Puzzle -> IO (Maybe Solution)
-solve p = fmap listToMaybe $ solveAll p
+solveAll :: Puzzle -> [Solution]
+solveAll (Puzzle ps size) = solveAll' (uniqueTransforms size ps) (empty size) []
 
-solveAll :: Puzzle -> IO [Solution]
-solveAll (Puzzle ps size) = do
-    ss <- solveAll' (length ts) p ts spsts c []
---    let ss = solveAll'' ((p,ts):spsts) c []
-    putStr "\n"
-    return ss
-    where ((p,ts):spsts) = uniqueTransforms size c ps
-          c = emptyCube size
-
-solveAll' :: Int -> Piece -> [TransPos] -> [PieceTransPos] -> CCuboid -> [PieceSolution] -> IO [Solution]
-solveAll' _ _ [] _ _ _ = return []
-solveAll' n p ((t,bs):tbs) psts c pss = do
-          printf "Computing... %.2f%%\n" percent
-          let c' = insertBlocks bs c
-          let ss = solveAll'' psts c' (PS p t:pss)
-          case ss of
-            [] -> remSols
-            _  -> fmap (ss ++) remSols
-    where percent = (1 - (fromIntegral $ length tbs) / (fromIntegral n)) * 100 :: Double
-          remSols = solveAll' n p tbs psts c pss
-
-solveAll'' :: [PieceTransPos] -> CCuboid -> [PieceSolution] -> [Solution]
-solveAll'' [] _ pss = [S pss]
-solveAll'' ((p, tbs):psts) c pss = concatMap (\(pp, c') -> solveAll'' psts c' (pp:pss)) $ places p tbs c
+solveAll' :: [PieceTransPos] -> CCuboid -> [PieceSolution] -> [Solution]
+solveAll' [] _ pss = [S pss]
+solveAll' ((p, tbs):psts) c pss = concatMap (\(pp, c') -> solveAll' psts c' (pp:pss)) $ places p tbs c
 
 places :: Piece -> [TransPos] -> CCuboid -> [(PieceSolution, CCuboid)]
-places p tbs c = [(PS p t, insertBlocks bs c) | (t, bs) <- ftbs]
+places p tbs c = [(PS p t, insertBlocks bs c) | (t, bs) <- filter (testBlock . snd) tbs]
     where testBlock = all (\(color,pos) -> (not $ has pos c) && verifyAdj pos color c)
-          ftbs = filter (testBlock . snd) tbs
 
 insertBlocks :: [(Color, Pos)] -> CCuboid -> CCuboid
-insertBlocks [] c = c
-insertBlocks ((color, pos):bs) c = insertBlocks bs $ set pos color c
+insertBlocks [] = id
+insertBlocks ((color, pos):bs) = insertBlocks bs . set pos color
 
 verifyAdj :: Pos -> Color -> CCuboid -> Bool
 verifyAdj pos color c = notElem color . catMaybes . map (\pos' -> get pos' c) $ adjPos pos
+    where adjPos (x,y,z) = [(x-1,y,z),(x+1,y,z),(x,y-1,z),(x,y+1,z),(x,y,z-1),(x,y,z+1)]
 
-adjPos :: Pos -> [Pos]
-adjPos (x,y,z) = [(x-1,y,z),(x+1,y,z),(x,y-1,z),(x,y+1,z),(x,y,z-1),(x,y,z+1)]
+-- | Puzzle analyzer functions.
 
-uniqueTransforms :: Size -> CCuboid -> [Piece] -> [PieceTransPos]
-uniqueTransforms size c ps = sortBy (comparing $ length . snd) psts
+analyzePuzzle :: Puzzle -> IO ()
+analyzePuzzle p = do
+        putStrLn $ "Is valid: " ++ show (verifyPuzzle p)
+        putStrLn $ "Unique transforms:"
+            ++ concatMap (\((P id _),uts) ->
+                "\nPiece " ++ show id ++ " with " ++
+                show (length uts) ++ " transformations") uts
+            ++ "\nCombinations: " ++ printf "%.2E" (fromInteger $ product $ map (toInteger . length . snd) uts :: Float)
+    where (Puzzle ps size) = p
+          uts = uniqueTransforms size ps
+
+-- | Transformation helper functions
+
+uniqueTransforms :: Size -> [Piece] -> [PieceTransPos]
+uniqueTransforms size ps = sortBy (comparing $ length . snd) psts
     where psts = map (\p' -> (p', uniqueTransforms' size ts p')) ps
-          ts = transforms $ getCandidates c
+          ts = transforms $ getAllPositions size
 
 uniqueTransforms' :: Size -> [Transform] -> Piece -> [TransPos]
 uniqueTransforms' size ts (P _ bs) = utbss
@@ -107,4 +89,7 @@ uniqueTransforms' size ts (P _ bs) = utbss
           utbss = nubBy (\(_,v1) (_,v2) -> (null $ v1 \\ v2) && (null $ v2 \\ v1)) $ ftbss
 
 isValidPos :: Size -> Pos -> Bool
-isValidPos (x,y,z) (px,py,pz) = px >= 0 && px < x && py >= 0 && py < y && pz >= 0 && pz < z
+isValidPos (x,y,z) (px,py,pz) =
+    px >= 0 && px < x &&
+    py >= 0 && py < y &&
+    pz >= 0 && pz < z

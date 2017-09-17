@@ -1,7 +1,10 @@
 module Puzzle (
 -- * Functions
-    simplePuzzle,
-    simplePuzzle2,
+    verifyPuzzle,
+
+-- * Constants
+    trivialPuzzle,
+    easyPuzzle,
     mediumPuzzle,
     oscarsPuzzle,
 
@@ -9,10 +12,14 @@ module Puzzle (
     Puzzle (Puzzle),
     Piece (P),
     Block (B),
-    Color (Black, White),
+    Color (White, Black),
 ) where
 
+-- | Imports
+
 import Common
+
+-- | Types
 
 data Puzzle = Puzzle [Piece] Size
     deriving Show
@@ -30,12 +37,25 @@ instance Show Block where
 data Color = White | Black
     deriving (Show, Eq)
 
-simplePuzzle :: Puzzle
-simplePuzzle = Puzzle [P "1" [B White (0,0,0)], P "2" [B White (0,0,0)], P "3" [B White (0,0,0)], P "4" [B White (0,0,0)],
+-- | Puzzle verification functions
+
+verifyPuzzle :: Puzzle -> Bool
+verifyPuzzle (Puzzle ps (x,y,z)) = length allBlocks == numBlocksToFill &&
+        ((even numBlocksToFill && length whiteBlocks == length blackBlocks) ||
+         (odd numBlocksToFill && 1 == abs (length whiteBlocks - length blackBlocks)))
+    where numBlocksToFill = x*y*z
+          allBlocks = concatMap (\(P _ bs) -> bs) ps
+          whiteBlocks = filter (\(B color _) -> color == White) allBlocks
+          blackBlocks = filter (\(B color _) -> color == Black) allBlocks
+
+-- | Example puzzles
+
+trivialPuzzle :: Puzzle
+trivialPuzzle = Puzzle [P "1" [B White (0,0,0)], P "2" [B White (0,0,0)], P "3" [B White (0,0,0)], P "4" [B White (0,0,0)],
                  P "5" [B Black (0,0,0)], P "6" [B Black (0,0,0)], P "7" [B Black (0,0,0)], P "8" [B Black (0,0,0)]] (2,2,2)
 
-simplePuzzle2 :: Puzzle
-simplePuzzle2 = Puzzle [
+easyPuzzle :: Puzzle
+easyPuzzle = Puzzle [
     P "1" [B White (0,0,0),B Black (1,0,0), B Black (0,1,0),B White (1,1,0)],
     P "2" [B White (0,0,0), B Black (1,0,0)],
     P "3" [B White (0,0,0)],

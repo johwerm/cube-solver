@@ -9,11 +9,14 @@ module Transform (
     Transform (T),
 ) where
 
+-- | Imports
+
 import Data.Matrix
 import Common
 
+-- | Types
+
 data Transform = T Translation Rotation
-    deriving Eq
 
 instance Show Transform where
     show (T t r) = "Translation:\n" ++ show t ++ "\n" ++
@@ -21,6 +24,8 @@ instance Show Transform where
 
 type Rotation = Matrix Int
 type Translation = Pos
+
+-- | Functions
 
 transforms :: [Pos] -> [Transform]
 transforms emptyposs = [T pos r | pos <- emptyposs, r <- rotationMatrices]
@@ -41,6 +46,7 @@ matrixToPos :: Matrix Int -> Pos
 matrixToPos m = (x,y,z)
     where [x,y,z] = toList m
 
+-- | All 24 rotation matrices for 90 degree rotations.
 rotationMatrices :: [Rotation]
 rotationMatrices = map fromLists $ [
     [[1,0,0],
