@@ -12,5 +12,5 @@ analyzeAndSolve :: Puzzle -> IO ()
 analyzeAndSolve p = do
     analyzePuzzle p
     timeIt $ putStrLn $ show $ solve p
---    timeIt $ putStrLn $ show $ take 100 $ solveAll p
+    timeIt $ putStrLn $ show $ take 100 $ solveAll p
 --    timeIt $ putStrLn $ show $ length $ solveAll p

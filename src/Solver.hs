@@ -54,21 +54,16 @@ solveAll' ((p, tbs):psts) c pss = concatMap (\(pp, c') -> solveAll' psts c' (pp:
 
 places :: Piece -> [TransPos] -> CCuboid -> [(PieceSolution, CCuboid)]
 places p tbs c = [(PS p t, insertBlocks bs c) | (t, bs) <- filter (testBlock . snd) tbs]
---    where testBlock = all (\(color,pos) -> (not $ has pos c) && verifyAdj pos color c)
     where testBlock = all (\(color,pos) -> not $ has pos c)
 
 insertBlocks :: [(Color, Pos)] -> CCuboid -> CCuboid
 insertBlocks [] = id
 insertBlocks ((color, pos):bs) = insertBlocks bs . set pos color
 
-verifyAdj :: Pos -> Color -> CCuboid -> Bool
-verifyAdj pos color c = notElem color . catMaybes . map (\pos' -> get pos' c) $ adjPos pos
-    where adjPos (x,y,z) = [(x-1,y,z),(x+1,y,z),(x,y-1,z),(x,y+1,z),(x,y,z-1),(x,y,z+1)]
-
 -- | Transformation helper functions
 
 colorUniqueTransforms :: Size -> [Piece] -> ([PieceTransPos],[PieceTransPos])
-colorUniqueTransforms size ps = ((map (\(p, ts) -> (p, filterByZColor White ts)) utbss) , (map (\(p, ts) -> (p, filterByZColor Black ts)) utbss))
+colorUniqueTransforms size ps = ((map (\(p, ts) -> (p, filterByZColor white ts)) utbss) , (map (\(p, ts) -> (p, filterByZColor black ts)) utbss))
     where utbss = uniqueTransforms size ps
           filterByZColor zcolor ts' = filter (\(_, bs) -> all (\(color, (x,y,z)) -> not $ (zcolor == color) /= (even (x+y+z))) bs) ts'
 

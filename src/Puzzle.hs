@@ -1,3 +1,5 @@
+{-# LANGUAGE GeneralizedNewtypeDeriving #-}
+
 module Puzzle (
 -- * Functions
     verifyPuzzle,
@@ -12,7 +14,7 @@ module Puzzle (
     Puzzle (Puzzle),
     Piece (P),
     Block (B),
-    Color (White, Black),
+    Color, white, black,
 ) where
 
 -- | Imports
@@ -34,8 +36,12 @@ data Block = B Color Pos
 instance Show Block where
     show (B color pos) = show color ++ ":" ++ show pos
 
-data Color = White | Black
-    deriving (Show, Eq)
+newtype Color = Color Int deriving (Eq,Ord,Enum)
+(white:black:_) = [Color 1, Color 2]
+
+instance Show Color where
+    show (Color i) | i == 1 = "White"
+                   | i == 2 = "Black"
 
 -- | Puzzle verification functions
 
@@ -45,46 +51,46 @@ verifyPuzzle (Puzzle ps (x,y,z)) = length allBlocks == numBlocksToFill &&
          (odd numBlocksToFill && 1 == abs (length whiteBlocks - length blackBlocks)))
     where numBlocksToFill = x*y*z
           allBlocks = concatMap (\(P _ bs) -> bs) ps
-          whiteBlocks = filter (\(B color _) -> color == White) allBlocks
-          blackBlocks = filter (\(B color _) -> color == Black) allBlocks
+          whiteBlocks = filter (\(B color _) -> color == white) allBlocks
+          blackBlocks = filter (\(B color _) -> color == black) allBlocks
 
 -- | Example puzzles
 
 trivialPuzzle :: Puzzle
-trivialPuzzle = Puzzle [P "1" [B White (0,0,0)], P "2" [B White (0,0,0)], P "3" [B White (0,0,0)], P "4" [B White (0,0,0)],
-                 P "5" [B Black (0,0,0)], P "6" [B Black (0,0,0)], P "7" [B Black (0,0,0)], P "8" [B Black (0,0,0)]] (2,2,2)
+trivialPuzzle = Puzzle [P "1" [B white (0,0,0)], P "2" [B white (0,0,0)], P "3" [B white (0,0,0)], P "4" [B white (0,0,0)],
+                 P "5" [B black (0,0,0)], P "6" [B black (0,0,0)], P "7" [B black (0,0,0)], P "8" [B black (0,0,0)]] (2,2,2)
 
 easyPuzzle :: Puzzle
 easyPuzzle = Puzzle [
-    P "1" [B White (0,0,0),B Black (1,0,0), B Black (0,1,0),B White (1,1,0)],
-    P "2" [B White (0,0,0), B Black (1,0,0)],
-    P "3" [B White (0,0,0)],
-    P "4" [B Black (0,0,0)]] (2,2,2)
+    P "1" [B white (0,0,0),B black (1,0,0), B black (0,1,0),B white (1,1,0)],
+    P "2" [B white (0,0,0), B black (1,0,0)],
+    P "3" [B white (0,0,0)],
+    P "4" [B black (0,0,0)]] (2,2,2)
 
 mediumPuzzle :: Puzzle
 mediumPuzzle = Puzzle [
-    P "1" [B White (0,0,0),B Black (1,0,0), B White (2,0,0),B Black (2,1,0)],
-    P "2" [B White (0,0,0),B Black (1,0,0), B White (2,0,0),B Black (2,1,0)],
-    P "3" [B White (0,0,0), B Black (1,0,0), B White (2,0,0)],
-    P "4" [B White (0,0,0), B Black (0,1,0), B White (1,1,0), B Black (2,1,0), B White (2,0,0)],
-    P "5" [B Black (0,0,0),B White (1,0,0), B Black (2,0,0),B White (2,1,0)],
-    P "6" [B Black (0,0,0),B White (1,0,0), B Black (1,1,0)],
-    P "7" [B White (0,0,0),B Black (1,0,0), B White (2,0,0),B Black (2,1,0)]] (3,3,3)
+    P "1" [B white (0,0,0),B black (1,0,0), B white (2,0,0),B black (2,1,0)],
+    P "2" [B white (0,0,0),B black (1,0,0), B white (2,0,0),B black (2,1,0)],
+    P "3" [B white (0,0,0), B black (1,0,0), B white (2,0,0)],
+    P "4" [B white (0,0,0), B black (0,1,0), B white (1,1,0), B black (2,1,0), B white (2,0,0)],
+    P "5" [B black (0,0,0),B white (1,0,0), B black (2,0,0),B white (2,1,0)],
+    P "6" [B black (0,0,0),B white (1,0,0), B black (1,1,0)],
+    P "7" [B white (0,0,0),B black (1,0,0), B white (2,0,0),B black (2,1,0)]] (3,3,3)
 
 oscarsPuzzle :: Puzzle
 oscarsPuzzle = Puzzle [
-    P "1" [B Black (0,0,0), B White (0,1,0), B White (1,0,0), B Black (1,1,0), B Black (2,0,0)],
-    P "2" [B White (0,0,0), B Black (1,0,0), B White (1,1,0), B Black (2,1,0), B White (1,-1,0)],
-    P "3" [B White (0,0,0), B Black (1,0,0), B White (1,1,0), B Black (2,1,0), B White (3,1,0)],
-    P "4" [B White (0,0,0), B Black (1,0,0), B White (2,0,0), B Black (0,1,0), B White (0,2,0)],
-    P "5" [B Black (0,0,0), B White (1,0,0), B Black (1,-1,0), B White (2,-1,0), B Black (2,-2,0)],
-    P "6" [B Black (0,0,0), B White (1,0,0), B White (0,1,0), B Black (1,1,0)],
-    P "7" [B White (0,0,0), B Black (1,0,0), B White (1,1,0), B Black (1,2,0), B White (2,0,0)],
-    P "8" [B White (0,0,0), B Black (0,1,0), B Black (1,0,0), B White (2,0,0), B Black (2,1,0)],
-    P "9" [B Black (0,0,0), B White (1,0,0), B Black (2,0,0), B White (3,0,0), B Black (3,1,0)],
-    P "10" [B White (0,0,0), B Black (1,0,0), B White (2,0,0), B Black (2,1,0), B Black (3,0,0)],
-    P "11" [B Black (0,0,0), B White (1,0,0), B Black (2,0,0), B White (2,1,0), B Black (3,1,0)],
-    P "12" [B White (0,0,0), B Black (1,0,0), B White (1,1,0), B White (1,-1,0), B White (2,0,0)],
-    P "13" [B White (0,0,0), B Black (0,1,0), B Black (1,0,0), B White (2,0,0), B Black (2,-1,0)]]
+    P "1" [B black (0,0,0), B white (0,1,0), B white (1,0,0), B black (1,1,0), B black (2,0,0)],
+    P "2" [B white (0,0,0), B black (1,0,0), B white (1,1,0), B black (2,1,0), B white (1,-1,0)],
+    P "3" [B white (0,0,0), B black (1,0,0), B white (1,1,0), B black (2,1,0), B white (3,1,0)],
+    P "4" [B white (0,0,0), B black (1,0,0), B white (2,0,0), B black (0,1,0), B white (0,2,0)],
+    P "5" [B black (0,0,0), B white (1,0,0), B black (1,-1,0), B white (2,-1,0), B black (2,-2,0)],
+    P "6" [B black (0,0,0), B white (1,0,0), B white (0,1,0), B black (1,1,0)],
+    P "7" [B white (0,0,0), B black (1,0,0), B white (1,1,0), B black (1,2,0), B white (2,0,0)],
+    P "8" [B white (0,0,0), B black (0,1,0), B black (1,0,0), B white (2,0,0), B black (2,1,0)],
+    P "9" [B black (0,0,0), B white (1,0,0), B black (2,0,0), B white (3,0,0), B black (3,1,0)],
+    P "10" [B white (0,0,0), B black (1,0,0), B white (2,0,0), B black (2,1,0), B black (3,0,0)],
+    P "11" [B black (0,0,0), B white (1,0,0), B black (2,0,0), B white (2,1,0), B black (3,1,0)],
+    P "12" [B white (0,0,0), B black (1,0,0), B white (1,1,0), B white (1,-1,0), B white (2,0,0)],
+    P "13" [B white (0,0,0), B black (0,1,0), B black (1,0,0), B white (2,0,0), B black (2,-1,0)]]
     (4,4,4)
 
