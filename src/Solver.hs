@@ -18,7 +18,6 @@ import Data.List (nubBy, intercalate, (\\), sortBy)
 import Data.Maybe (catMaybes, listToMaybe)
 import Text.Printf
 
-import System.TimeIt
 -- | Types
 
 data Solution = S [PieceSolution]
