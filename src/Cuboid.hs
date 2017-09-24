@@ -12,27 +12,30 @@ module Cuboid (
 
 -- | Imports
 
-import Data.Map.Strict as M (Map, empty, lookup, insert, member)
+import Data.Maybe (isJust)
+import Data.Array
+import Control.Monad (join)
 import Common
 
 -- | Types
 
-data Cuboid a = C (Map Pos a) Size
-    deriving Show
+data Cuboid a = C (Array Int (Maybe a)) Size
 
 -- | Functions
 
 empty :: Size -> Cuboid a
-empty = C M.empty
+empty size = C (listArray (0, (length $ getAllPositions size) - 1) [Nothing | _ <- getAllPositions size]) size
+
+-- | Unsafe
+has :: Pos -> Cuboid a -> Bool
+has pos = isJust . get pos
 
 get :: Pos -> Cuboid a -> Maybe a
-get pos (C m _) = M.lookup pos m
-
-has :: Pos -> Cuboid a -> Bool
-has pos (C m _) = M.member pos m
+get (x,y,z) (C c (sx,sy,sz)) = c ! (x*sy*sz+y*sz+z)
 
 set :: Pos -> a -> Cuboid a -> Cuboid a
-set pos v (C m size) = C (M.insert pos v m) size
+set (x,y,z) v (C c size) = C (c // [(x*sy*sz+y*sz+z,Just v)]) size
+    where (sx,sy,sz) = size
 
 getAllPositions :: Size -> [Pos]
 getAllPositions (x,y,z) = [(px,py,pz) | px <- [0..(z-1)], py <- [0..(y-1)], pz <- [0..(x-1)]]
